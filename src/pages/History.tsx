@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect } from 'react';
-import { Calendar, Search, Download, RotateCcw, Clock, Target, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Search, Download, RotateCcw, Clock, Target, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,14 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useLocation } from 'react-router-dom';
-
-interface ScanRecord {
-  id: number;
-  plateNumber: string;
-  timestamp: Date;
-  confidence: number;
-  screenshotUrl?: string;
-}
+import api from '@/lib/axios';
+import { getScanHistory, HistoryRecord } from '@/api/history';
 
 const History = () => {
   const { toast } = useToast();
@@ -27,39 +20,44 @@ const History = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
 
-  // Check for plate parameter in URL and set it as search term
+  const [scanData, setScanData] = useState<HistoryRecord[]>([]);
+  const [totalRecords, setTotalRecords] = useState(0);
+  const totalPages = Math.ceil(totalRecords / recordsPerPage);
+
+  // Check for plate param in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
     const plateParam = urlParams.get('plate');
-    if (plateParam) {
-      setSearchTerm(plateParam);
-    }
+    if (plateParam) setSearchTerm(plateParam);
   }, [location]);
 
-  // Mock data for demonstration
-  const mockData: ScanRecord[] = Array.from({ length: 47 }, (_, i) => ({
-    id: i + 1,
-    plateNumber: `ABC${(123 + i).toString().padStart(3, '0')}`,
-    timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
-    confidence: Math.random() * 0.4 + 0.6, // 60-100%
-    screenshotUrl: Math.random() > 0.3 ? `/screenshots/img_${i + 1}.jpg` : undefined,
-  }));
+  // Fetch scan history data from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const res = await getScanHistory({
+          plate: searchTerm,
+          date_from: dateFrom,
+          date_to: dateTo,
+          page: currentPage,
+          per_page: recordsPerPage,
+        });
 
-  // Filter data based on search and date range
-  const filteredData = mockData.filter(record => {
-    const matchesSearch = record.plateNumber.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesDateFrom = !dateFrom || record.timestamp >= new Date(dateFrom);
-    const matchesDateTo = !dateTo || record.timestamp <= new Date(dateTo);
-    return matchesSearch && matchesDateFrom && matchesDateTo;
-  });
+        console.log('Scan History Response:', res); // 👈 log to inspect
 
-  // Pagination
-  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
-  const startIndex = (currentPage - 1) * recordsPerPage;
-  const paginatedData = filteredData.slice(startIndex, startIndex + recordsPerPage);
+        setScanData(res.items);
+        setTotalRecords(res.total);
+      } catch (err: any) {
+        console.error('Fetch failed:', err); // 👈 log the full error
+        toast({ title: 'Failed to load data', description: 'Please try again later.' });
+      }
+    };
 
-  const formatTimestamp = (date: Date) => {
-    return date.toLocaleString('en-US', {
+    fetchData();
+  }, [searchTerm, dateFrom, dateTo, currentPage]);
+
+  const formatTimestamp = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString('en-US', {
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -78,8 +76,8 @@ const History = () => {
   const handleExportCSV = () => {
     const csvContent = [
       'Plate Number,Timestamp,Confidence',
-      ...filteredData.map(record => 
-        `${record.plateNumber},${record.timestamp.toISOString()},${Math.round(record.confidence * 100)}%`
+      ...scanData.map(record =>
+        `${record.plate_number},${record.timestamp},${Math.round(record.confidence * 100)}%`
       )
     ].join('\n');
 
@@ -93,7 +91,7 @@ const History = () => {
 
     toast({
       title: "Export Successful! 📊",
-      description: `${filteredData.length} records exported to CSV file.`,
+      description: `${scanData.length} records exported to CSV file.`,
     });
   };
 
@@ -102,7 +100,7 @@ const History = () => {
     setDateFrom('');
     setDateTo('');
     setCurrentPage(1);
-    
+
     toast({
       title: "Filters Reset! 🔄",
       description: "All filters have been cleared and data is now showing all records.",
@@ -112,7 +110,6 @@ const History = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Current Date Display */}
         <div className="text-right mb-4 text-sm text-gray-500">
           Current Date: {new Date().toLocaleDateString('en-US', {
             weekday: 'long',
@@ -122,7 +119,6 @@ const History = () => {
           })}
         </div>
 
-        {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
           <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
           <span>/</span>
@@ -133,7 +129,6 @@ const History = () => {
           <span className="text-gray-900 font-medium">History</span>
         </div>
 
-        {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
@@ -148,7 +143,6 @@ const History = () => {
           </p>
         </div>
 
-        {/* Filters Card */}
         <Card className="mb-8 shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-scale-in">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -202,15 +196,13 @@ const History = () => {
           </CardContent>
         </Card>
 
-        {/* Results Summary */}
         <div className="mb-6">
           <p className="text-gray-600">
-            Showing {paginatedData.length} of {filteredData.length} records
+            Showing {scanData.length} of {totalRecords} records
             {searchTerm && ` matching "${searchTerm}"`}
           </p>
         </div>
 
-        {/* Data Table */}
         <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm animate-fade-in">
           <CardContent className="p-0">
             <Table>
@@ -233,11 +225,11 @@ const History = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {paginatedData.map((record) => (
+                {scanData.map((record) => (
                   <TableRow key={record.id} className="hover:bg-blue-50/50 transition-colors">
                     <TableCell>
                       <div className="font-mono font-bold text-lg text-gray-900">
-                        {record.plateNumber}
+                        {record.plate_number}
                       </div>
                     </TableCell>
                     <TableCell className="text-gray-600">
@@ -247,14 +239,7 @@ const History = () => {
                       {getConfidenceBadge(record.confidence)}
                     </TableCell>
                     <TableCell>
-                      {record.screenshotUrl ? (
-                        <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                          <Target className="h-4 w-4 mr-1" />
-                          View
-                        </Button>
-                      ) : (
-                        <span className="text-gray-400 text-sm">N/A</span>
-                      )}
+                      <span className="text-gray-400 text-sm">N/A</span>
                     </TableCell>
                   </TableRow>
                 ))}
@@ -263,14 +248,13 @@ const History = () => {
           </CardContent>
         </Card>
 
-        {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-8 flex justify-center animate-fade-in">
             <Pagination>
               <PaginationContent>
                 <PaginationItem>
-                  <PaginationPrevious 
-                    href="#" 
+                  <PaginationPrevious
+                    href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage > 1) setCurrentPage(currentPage - 1);
@@ -278,28 +262,23 @@ const History = () => {
                     className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
                   />
                 </PaginationItem>
-                
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  const pageNum = i + 1;
-                  return (
-                    <PaginationItem key={pageNum}>
-                      <PaginationLink
-                        href="#"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          setCurrentPage(pageNum);
-                        }}
-                        isActive={currentPage === pageNum}
-                      >
-                        {pageNum}
-                      </PaginationLink>
-                    </PaginationItem>
-                  );
-                })}
-
+                {Array.from({ length: totalPages }, (_, i) => i + 1).slice(0, 5).map((pageNum) => (
+                  <PaginationItem key={pageNum}>
+                    <PaginationLink
+                      href="#"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setCurrentPage(pageNum);
+                      }}
+                      isActive={currentPage === pageNum}
+                    >
+                      {pageNum}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
                 <PaginationItem>
-                  <PaginationNext 
-                    href="#" 
+                  <PaginationNext
+                    href="#"
                     onClick={(e) => {
                       e.preventDefault();
                       if (currentPage < totalPages) setCurrentPage(currentPage + 1);

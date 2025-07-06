@@ -147,7 +147,8 @@ const Index = () => {
 
           {/* Footer */}
           <div className="text-center mt-12 text-gray-500">
-            <p>Need help? Our AI assistant is here to guide you through the setup process.</p>
+            {/* <p>Need help? Our AI assistant is here to guide you through the setup process.</p> */}
+            <p></p>
           </div>
         </div>
       </div>
