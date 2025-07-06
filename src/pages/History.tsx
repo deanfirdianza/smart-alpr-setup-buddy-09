@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Calendar, Search, Download, Trash2, Camera, Clock, Target, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -105,6 +104,8 @@ const History = () => {
           <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
           <span>/</span>
           <Link to="/dashboard" className="hover:text-blue-600 transition-colors">Dashboard</Link>
+          <span>/</span>
+          <Link to="/registry" className="hover:text-blue-600 transition-colors">Registry</Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">History</span>
         </div>

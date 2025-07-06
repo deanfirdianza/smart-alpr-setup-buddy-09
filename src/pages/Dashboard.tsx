@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, Target, Database, Settings, Clock, CheckCircle2 } from 'lucide-react';
+import { Camera, Target, Database, Settings, Clock, CheckCircle2, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -7,6 +7,7 @@ import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
 import { Link } from 'react-router-dom';
+import { FileText } from 'lucide-react';
 
 interface Detection {
   id: number;
@@ -45,32 +46,44 @@ const Dashboard = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
-        {/* Navigation Bar */}
-        <nav className="flex justify-between items-center mb-8">
-          <div className="flex items-center gap-4">
-            <Link to="/" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors">
-              <Camera className="h-6 w-6" />
-              <span className="font-bold text-xl">Smart ALPR</span>
-            </Link>
-            <span className="text-gray-300">|</span>
-            <Link to="/history" className="text-blue-600 hover:text-blue-800 transition-colors font-medium">
-              View History
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600">Live</span>
-          </div>
-        </nav>
+        {/* Breadcrumb Navigation */}
+        <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
+          <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
+          <span>/</span>
+          <span className="text-gray-900 font-medium">Dashboard</span>
+        </div>
 
         {/* Header */}
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-            Live ALPR Scan
-          </h1>
-          <p className="text-gray-600">Real-time license plate recognition system</p>
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
+              <Play className="h-8 w-8 text-white" />
+            </div>
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              Live ALPR Scan
+            </h1>
+          </div>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Real-time license plate detection and recognition system
+          </p>
+        </div>
+
+        {/* Quick Navigation */}
+        <div className="mb-8 flex justify-center gap-4">
+          <Link to="/history">
+            <Button variant="outline" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              View History
+            </Button>
+          </Link>
+          <Link to="/registry">
+            <Button variant="outline" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Plate Registry
+            </Button>
+          </Link>
         </div>
 
         {/* Main Dashboard Grid */}
