@@ -73,11 +73,11 @@ const Index = () => {
             <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 transition-colors">
               Dashboard
             </Link>
-            <Link to="/history" className="text-blue-600 hover:text-blue-800 transition-colors">
-              History
-            </Link>
             <Link to="/registry" className="text-blue-600 hover:text-blue-800 transition-colors">
               Registry
+            </Link>
+            <Link to="/history" className="text-blue-600 hover:text-blue-800 transition-colors">
+              History
             </Link>
           </div>
         </nav>

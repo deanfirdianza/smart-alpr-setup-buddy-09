@@ -105,16 +105,16 @@ const Dashboard = () => {
 
         {/* Quick Navigation */}
         <div className="mb-8 flex justify-center gap-4">
-          <Link to="/history">
-            <Button variant="outline" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              View History
-            </Button>
-          </Link>
           <Link to="/registry">
             <Button variant="outline" className="flex items-center gap-2">
               <Database className="h-4 w-4" />
               Plate Registry
+            </Button>
+          </Link>
+          <Link to="/history">
+            <Button variant="outline" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              View History
             </Button>
           </Link>
         </div>
