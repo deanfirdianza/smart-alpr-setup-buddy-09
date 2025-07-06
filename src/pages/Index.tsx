@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import AIAssistant from '@/components/AIAssistant';
 import ConfigurationForm from '@/components/ConfigurationForm';
 
@@ -62,6 +62,22 @@ const Index = () => {
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         {/* AI Assistant */}
         <AIAssistant />
+        
+        {/* Navigation Bar */}
+        <nav className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <Camera className="h-6 w-6 text-blue-600" />
+            <span className="font-bold text-xl text-gray-800">Smart ALPR</span>
+          </div>
+          <div className="flex gap-4">
+            <Link to="/dashboard" className="text-blue-600 hover:text-blue-800 transition-colors">
+              Dashboard
+            </Link>
+            <Link to="/history" className="text-blue-600 hover:text-blue-800 transition-colors">
+              History
+            </Link>
+          </div>
+        </nav>
         
         {/* Header */}
         <div className="container mx-auto px-4 py-8">
