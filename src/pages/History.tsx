@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Calendar, Search, Download, Trash2, Camera, Clock, Target, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+
+import React, { useState, useEffect } from 'react';
+import { Calendar, Search, Download, Trash2, Clock, Target, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,24 +8,33 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from '@/components/ui/pagination';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 interface ScanRecord {
   id: number;
   plateNumber: string;
   timestamp: Date;
   confidence: number;
-  cameraSource: string;
   screenshotUrl?: string;
 }
 
 const History = () => {
   const { toast } = useToast();
+  const location = useLocation();
   const [searchTerm, setSearchTerm] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 10;
+
+  // Check for plate parameter in URL and set it as search term
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const plateParam = urlParams.get('plate');
+    if (plateParam) {
+      setSearchTerm(plateParam);
+    }
+  }, [location]);
 
   // Mock data for demonstration
   const mockData: ScanRecord[] = Array.from({ length: 47 }, (_, i) => ({
@@ -32,7 +42,6 @@ const History = () => {
     plateNumber: `ABC${(123 + i).toString().padStart(3, '0')}`,
     timestamp: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
     confidence: Math.random() * 0.4 + 0.6, // 60-100%
-    cameraSource: `Camera ${Math.floor(Math.random() * 3) + 1}`,
     screenshotUrl: Math.random() > 0.3 ? `/screenshots/img_${i + 1}.jpg` : undefined,
   }));
 
@@ -68,9 +77,9 @@ const History = () => {
 
   const handleExportCSV = () => {
     const csvContent = [
-      'Plate Number,Timestamp,Confidence,Camera Source',
+      'Plate Number,Timestamp,Confidence',
       ...filteredData.map(record => 
-        `${record.plateNumber},${record.timestamp.toISOString()},${Math.round(record.confidence * 100)}%,${record.cameraSource}`
+        `${record.plateNumber},${record.timestamp.toISOString()},${Math.round(record.confidence * 100)}%`
       )
     ].join('\n');
 
@@ -99,6 +108,16 @@ const History = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Current Date Display */}
+        <div className="text-right mb-4 text-sm text-gray-500">
+          Current Date: {new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </div>
+
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
           <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
@@ -206,12 +225,6 @@ const History = () => {
                     </div>
                   </TableHead>
                   <TableHead className="font-semibold">Confidence</TableHead>
-                  <TableHead className="font-semibold">
-                    <div className="flex items-center gap-2">
-                      <Camera className="h-4 w-4 text-blue-500" />
-                      Camera Source
-                    </div>
-                  </TableHead>
                   <TableHead className="font-semibold">Screenshot</TableHead>
                 </TableRow>
               </TableHeader>
@@ -230,14 +243,9 @@ const History = () => {
                       {getConfidenceBadge(record.confidence)}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="bg-gray-50">
-                        {record.cameraSource}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
                       {record.screenshotUrl ? (
                         <Button variant="ghost" size="sm" className="text-blue-600 hover:text-blue-800">
-                          <Camera className="h-4 w-4 mr-1" />
+                          <Target className="h-4 w-4 mr-1" />
                           View
                         </Button>
                       ) : (

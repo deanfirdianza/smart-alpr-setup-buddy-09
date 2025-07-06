@@ -1,13 +1,13 @@
 
 import React, { useState } from 'react';
-import { Search, RefreshCw, Database, Shield, User, Calendar, Target } from 'lucide-react';
+import { Search, RefreshCw, Database, Shield, User, Calendar, Target, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 interface RegistryRecord {
   id: number;
@@ -19,7 +19,9 @@ interface RegistryRecord {
 
 const Registry = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'Paid' | 'Unpaid' | 'Unknown' | ''>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Mock data for demonstration
@@ -60,11 +62,13 @@ const Registry = () => {
     },
   ];
 
-  // Filter data based on search
-  const filteredData = mockData.filter(record =>
-    record.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (record.registeredOwner && record.registeredOwner.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filter data based on search and status
+  const filteredData = mockData.filter(record => {
+    const matchesSearch = record.plateNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (record.registeredOwner && record.registeredOwner.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesStatus = !statusFilter || record.taxStatus === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -75,13 +79,40 @@ const Registry = () => {
   };
 
   const getTaxStatusBadge = (status: 'Paid' | 'Unpaid' | 'Unknown') => {
+    const handleStatusClick = () => {
+      setStatusFilter(statusFilter === status ? '' : status);
+    };
+
     switch (status) {
       case 'Paid':
-        return <Badge className="bg-green-100 text-green-800 border-green-200">Paid</Badge>;
+        return (
+          <Badge 
+            className="bg-green-100 text-green-800 border-green-200 cursor-pointer hover:bg-green-200 transition-colors"
+            onClick={handleStatusClick}
+          >
+            Paid
+          </Badge>
+        );
       case 'Unpaid':
-        return <Badge variant="destructive">Unpaid</Badge>;
+        return (
+          <Badge 
+            variant="destructive" 
+            className="cursor-pointer hover:bg-red-600 transition-colors"
+            onClick={handleStatusClick}
+          >
+            Unpaid
+          </Badge>
+        );
       case 'Unknown':
-        return <Badge variant="secondary">Unknown</Badge>;
+        return (
+          <Badge 
+            variant="secondary" 
+            className="cursor-pointer hover:bg-gray-300 transition-colors"
+            onClick={handleStatusClick}
+          >
+            Unknown
+          </Badge>
+        );
     }
   };
 
@@ -96,6 +127,10 @@ const Registry = () => {
       title: "Database Refreshed! 🔄",
       description: "License plate registry updated with latest government data.",
     });
+  };
+
+  const handleViewHistory = (plateNumber: string) => {
+    navigate(`/history?plate=${encodeURIComponent(plateNumber)}`);
   };
 
   const getStatusCounts = () => {
@@ -116,6 +151,16 @@ const Registry = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Current Date Display */}
+        <div className="text-right mb-4 text-sm text-gray-500">
+          Current Date: {new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </div>
+
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
           <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
@@ -204,6 +249,16 @@ const Registry = () => {
                   className="bg-white"
                 />
               </div>
+              {statusFilter && (
+                <Button
+                  onClick={() => setStatusFilter('')}
+                  variant="outline"
+                  size="sm"
+                  className="text-gray-600"
+                >
+                  Clear Filter: {statusFilter}
+                </Button>
+              )}
               <Button
                 onClick={handleRefreshDatabase}
                 disabled={isRefreshing}
@@ -225,6 +280,7 @@ const Registry = () => {
           <p className="text-gray-600">
             Showing {filteredData.length} of {mockData.length} registry records
             {searchTerm && ` matching "${searchTerm}"`}
+            {statusFilter && ` with ${statusFilter} tax status`}
           </p>
         </div>
 
@@ -258,6 +314,7 @@ const Registry = () => {
                       Last Checked
                     </div>
                   </TableHead>
+                  <TableHead className="font-semibold">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -280,6 +337,17 @@ const Registry = () => {
                     </TableCell>
                     <TableCell className="text-gray-600">
                       {formatDate(record.lastChecked)}
+                    </TableCell>
+                    <TableCell>
+                      <Button
+                        onClick={() => handleViewHistory(record.plateNumber)}
+                        variant="outline"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        Detail History
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}

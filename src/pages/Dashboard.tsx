@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
-import { Camera, Target, Database, Settings, Clock, CheckCircle2, Play } from 'lucide-react';
+import { Camera, Target, Database, Settings, Clock, CheckCircle2, Play, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useToast } from '@/hooks/use-toast';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 
 interface Detection {
@@ -18,7 +19,8 @@ interface Detection {
 
 const Dashboard = () => {
   const { toast } = useToast();
-  const [currentFrame, setCurrentFrame] = useState('/placeholder-frame.jpg');
+  const navigate = useNavigate();
+  const [currentFrame, setCurrentFrame] = useState('https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=800&h=600&fit=crop');
   const [lastDetection, setLastDetection] = useState<Detection | null>(null);
   const [detectionHistory, setDetectionHistory] = useState<Detection[]>([]);
   const [autoOcrEnabled, setAutoOcrEnabled] = useState(true);
@@ -26,11 +28,12 @@ const Dashboard = () => {
   // Mock function to simulate camera feed updates
   useEffect(() => {
     const intervalId = setInterval(() => {
-      // Simulate new frame
-      setCurrentFrame(`/frame-${Math.floor(Math.random() * 5) + 1}.jpg`);
+      // Simulate new frame - using a working placeholder image
+      const imageIndex = Math.floor(Math.random() * 5) + 1;
+      setCurrentFrame(`https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=800&h=600&fit=crop&q=80&sig=${imageIndex}`);
 
-      // Simulate detection
-      if (Math.random() > 0.7) {
+      // Simulate detection only if auto OCR is enabled
+      if (autoOcrEnabled && Math.random() > 0.7) {
         const newDetection: Detection = {
           id: Date.now(),
           plateNumber: `PLATE-${Math.floor(Math.random() * 999)}`,
@@ -43,11 +46,41 @@ const Dashboard = () => {
     }, 3000);
 
     return () => clearInterval(intervalId);
-  }, []);
+  }, [autoOcrEnabled]);
+
+  const handleManualScan = () => {
+    const newDetection: Detection = {
+      id: Date.now(),
+      plateNumber: `SCAN-${Math.floor(Math.random() * 999)}`,
+      timestamp: new Date(),
+      confidence: Math.random() * 0.3 + 0.7,
+    };
+    setLastDetection(newDetection);
+    setDetectionHistory((prev) => [newDetection, ...prev]);
+    
+    toast({
+      title: "Manual Scan Complete! 📸",
+      description: `Detected plate: ${newDetection.plateNumber}`,
+    });
+  };
+
+  const handleViewHistory = (plateNumber: string) => {
+    navigate(`/history?plate=${encodeURIComponent(plateNumber)}`);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
+        {/* Current Date Display */}
+        <div className="text-right mb-4 text-sm text-gray-500">
+          Current Date: {new Date().toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          })}
+        </div>
+
         {/* Breadcrumb Navigation */}
         <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
           <Link to="/" className="hover:text-blue-600 transition-colors">Home</Link>
@@ -109,6 +142,9 @@ const Dashboard = () => {
                     src={currentFrame}
                     alt="Live camera feed"
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = 'https://images.unsplash.com/photo-1605810230434-7631ac76ec81?w=800&h=600&fit=crop&q=80';
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
                   {/* Simulated detection overlay */}
@@ -140,7 +176,7 @@ const Dashboard = () => {
                       </div>
                       <div className="flex items-center justify-center gap-2 text-sm text-gray-600">
                         <Clock className="h-4 w-4" />
-                        {lastDetection.timestamp.toLocaleTimeString()}
+                        {lastDetection.timestamp.toLocaleString()}
                       </div>
                     </div>
                     
@@ -181,14 +217,33 @@ const Dashboard = () => {
                     <div className="font-medium text-sm">Auto OCR Mode</div>
                     <div className="text-xs text-gray-500">Automatic text recognition</div>
                   </div>
-                  <Switch checked={autoOcrEnabled} onCheckedChange={setAutoOcrEnabled} />
+                  <Switch 
+                    checked={autoOcrEnabled} 
+                    onCheckedChange={(checked) => {
+                      setAutoOcrEnabled(checked);
+                      toast({
+                        title: `Auto OCR ${checked ? 'Enabled' : 'Disabled'}`,
+                        description: checked ? "System will automatically scan plates" : "Manual scanning mode activated",
+                      });
+                    }}
+                  />
                 </div>
+                
+                {!autoOcrEnabled && (
+                  <Button 
+                    onClick={handleManualScan}
+                    className="w-full bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700"
+                  >
+                    <Camera className="h-4 w-4 mr-2" />
+                    Scan Now
+                  </Button>
+                )}
                 
                 <Button 
                   onClick={() => {
                     toast({
                       title: "Settings Updated",
-                      description: "OCR mode toggled successfully",
+                      description: "Configuration applied successfully",
                     });
                   }}
                   className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
@@ -222,9 +277,9 @@ const Dashboard = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Plate Number</TableHead>
-                  <TableHead>Time</TableHead>
+                  <TableHead>Timestamp</TableHead>
                   <TableHead>Confidence</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Detail History</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -234,7 +289,7 @@ const Dashboard = () => {
                       {detection.plateNumber}
                     </TableCell>
                     <TableCell className="text-gray-600">
-                      {detection.timestamp.toLocaleTimeString()}
+                      {detection.timestamp.toLocaleString()}
                     </TableCell>
                     <TableCell>
                       <Badge variant={detection.confidence > 0.9 ? 'default' : 'secondary'}>
@@ -242,10 +297,15 @@ const Dashboard = () => {
                       </Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                        <CheckCircle2 className="h-3 w-3 mr-1" />
-                        Processed
-                      </Badge>
+                      <Button
+                        onClick={() => handleViewHistory(detection.plateNumber)}
+                        variant="outline"
+                        size="sm"
+                        className="text-blue-600 hover:text-blue-800 hover:bg-blue-50"
+                      >
+                        <Eye className="h-4 w-4 mr-1" />
+                        View History
+                      </Button>
                     </TableCell>
                   </TableRow>
                 ))}
