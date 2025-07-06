@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calendar, Search, Download, Trash2, Clock, Target, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Calendar, Search, Download, RotateCcw, Clock, Target, FileText, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -97,11 +97,15 @@ const History = () => {
     });
   };
 
-  const handleClearHistory = () => {
+  const handleResetFilters = () => {
+    setSearchTerm('');
+    setDateFrom('');
+    setDateTo('');
+    setCurrentPage(1);
+    
     toast({
-      title: "Clear History",
-      description: "History clearing feature would be implemented here.",
-      variant: "destructive",
+      title: "Filters Reset! 🔄",
+      description: "All filters have been cleared and data is now showing all records.",
     });
   };
 
@@ -189,8 +193,8 @@ const History = () => {
                     <Download className="h-4 w-4 mr-1" />
                     Export CSV
                   </Button>
-                  <Button onClick={handleClearHistory} variant="outline" size="sm" className="text-red-600 hover:bg-red-50">
-                    <Trash2 className="h-4 w-4" />
+                  <Button onClick={handleResetFilters} variant="outline" size="sm" className="text-blue-600 hover:bg-blue-50">
+                    <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

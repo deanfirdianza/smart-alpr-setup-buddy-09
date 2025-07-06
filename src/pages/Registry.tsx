@@ -148,6 +148,10 @@ const Registry = () => {
 
   const statusCounts = getStatusCounts();
 
+  const handleStatusCardClick = (status: 'Paid' | 'Unpaid' | 'Unknown') => {
+    setStatusFilter(statusFilter === status ? '' : status);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <div className="container mx-auto px-4 py-8">
@@ -187,7 +191,12 @@ const Registry = () => {
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-scale-in">
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <Card 
+            className={`shadow-lg border-0 bg-white/80 backdrop-blur-sm cursor-pointer transition-all duration-200 hover:shadow-xl hover:scale-105 ${
+              statusFilter === 'Paid' ? 'ring-2 ring-green-500 bg-green-50/80' : ''
+            }`}
+            onClick={() => handleStatusCardClick('Paid')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -201,7 +210,12 @@ const Registry = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <Card 
+            className={`shadow-lg border-0 bg-white/80 backdrop-blur-sm cursor-pointer transition-all duration-200 hover:shadow-xl hover:scale-105 ${
+              statusFilter === 'Unpaid' ? 'ring-2 ring-red-500 bg-red-50/80' : ''
+            }`}
+            onClick={() => handleStatusCardClick('Unpaid')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -215,7 +229,12 @@ const Registry = () => {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg border-0 bg-white/80 backdrop-blur-sm">
+          <Card 
+            className={`shadow-lg border-0 bg-white/80 backdrop-blur-sm cursor-pointer transition-all duration-200 hover:shadow-xl hover:scale-105 ${
+              statusFilter === 'Unknown' ? 'ring-2 ring-gray-500 bg-gray-50/80' : ''
+            }`}
+            onClick={() => handleStatusCardClick('Unknown')}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
