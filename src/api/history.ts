@@ -1,4 +1,5 @@
 import api from '@/lib/axios';
+import axios from 'axios';
 
 export interface HistoryRecord {
   id: number;
@@ -21,9 +22,4 @@ export const getScanHistory = async (params: {
 }) => {
   const res = await api.get('/history', { params });
   return res.data as HistoryResponse;
-};
-
-export const getScanHistoryFromDashboard = async (params = {}) => {
-  const response = await api.get<{ items: HistoryRecord[]; total: number }>('/history', { params });
-  return response.data;
 };
