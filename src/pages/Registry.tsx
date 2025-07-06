@@ -1,4 +1,5 @@
 
+
 import React, { useState } from 'react';
 import { Search, RefreshCw, Database, Shield, User, Calendar, Target, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +7,15 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
 import { useToast } from '@/hooks/use-toast';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -23,6 +33,8 @@ const Registry = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<'Paid' | 'Unpaid' | 'Unknown' | ''>('');
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const recordsPerPage = 10;
 
   // Mock data for demonstration
   const mockData: RegistryRecord[] = [
@@ -60,6 +72,77 @@ const Registry = () => {
       taxStatus: 'Unpaid',
       lastChecked: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
     },
+    // Add more mock data to demonstrate pagination
+    {
+      id: 6,
+      plateNumber: 'MNO678',
+      registeredOwner: 'David Wilson',
+      taxStatus: 'Paid',
+      lastChecked: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 7,
+      plateNumber: 'PQR901',
+      registeredOwner: 'Lisa Garcia',
+      taxStatus: 'Unknown',
+      lastChecked: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 8,
+      plateNumber: 'STU234',
+      registeredOwner: 'Robert Martinez',
+      taxStatus: 'Unpaid',
+      lastChecked: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 9,
+      plateNumber: 'VWX567',
+      registeredOwner: 'Jennifer Lee',
+      taxStatus: 'Paid',
+      lastChecked: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 10,
+      plateNumber: 'YZA890',
+      registeredOwner: 'Christopher Taylor',
+      taxStatus: 'Unknown',
+      lastChecked: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 11,
+      plateNumber: 'BCD123',
+      registeredOwner: 'Amanda White',
+      taxStatus: 'Paid',
+      lastChecked: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 12,
+      plateNumber: 'EFG456',
+      registeredOwner: 'Kevin Anderson',
+      taxStatus: 'Unpaid',
+      lastChecked: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 13,
+      plateNumber: 'HIJ789',
+      registeredOwner: 'Michelle Thomas',
+      taxStatus: 'Unknown',
+      lastChecked: new Date(Date.now() - 8 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 14,
+      plateNumber: 'KLM012',
+      registeredOwner: 'Ryan Jackson',
+      taxStatus: 'Paid',
+      lastChecked: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+    },
+    {
+      id: 15,
+      plateNumber: 'NOP345',
+      registeredOwner: 'Nicole Harris',
+      taxStatus: 'Unpaid',
+      lastChecked: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000),
+    },
   ];
 
   // Filter data based on search and status
@@ -69,6 +152,17 @@ const Registry = () => {
     const matchesStatus = !statusFilter || record.taxStatus === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredData.length / recordsPerPage);
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = startIndex + recordsPerPage;
+  const currentData = filteredData.slice(startIndex, endIndex);
+
+  // Reset to first page when filters change
+  React.useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, statusFilter]);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', {
@@ -150,6 +244,112 @@ const Registry = () => {
 
   const handleStatusCardClick = (status: 'Paid' | 'Unpaid' | 'Unknown') => {
     setStatusFilter(statusFilter === status ? '' : status);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  const renderPaginationItems = () => {
+    const items = [];
+    const maxVisiblePages = 5;
+    
+    if (totalPages <= maxVisiblePages) {
+      // Show all pages if total is small
+      for (let i = 1; i <= totalPages; i++) {
+        items.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageChange(i);
+              }}
+              isActive={currentPage === i}
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+    } else {
+      // Show first page
+      items.push(
+        <PaginationItem key={1}>
+          <PaginationLink
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              handlePageChange(1);
+            }}
+            isActive={currentPage === 1}
+          >
+            1
+          </PaginationLink>
+        </PaginationItem>
+      );
+
+      // Show ellipsis if needed
+      if (currentPage > 3) {
+        items.push(
+          <PaginationItem key="ellipsis1">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      // Show current page and surrounding pages
+      const start = Math.max(2, currentPage - 1);
+      const end = Math.min(totalPages - 1, currentPage + 1);
+      
+      for (let i = start; i <= end; i++) {
+        if (i !== 1 && i !== totalPages) {
+          items.push(
+            <PaginationItem key={i}>
+              <PaginationLink
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePageChange(i);
+                }}
+                isActive={currentPage === i}
+              >
+                {i}
+              </PaginationLink>
+            </PaginationItem>
+          );
+        }
+      }
+
+      // Show ellipsis if needed
+      if (currentPage < totalPages - 2) {
+        items.push(
+          <PaginationItem key="ellipsis2">
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      }
+
+      // Show last page
+      if (totalPages > 1) {
+        items.push(
+          <PaginationItem key={totalPages}>
+            <PaginationLink
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                handlePageChange(totalPages);
+              }}
+              isActive={currentPage === totalPages}
+            >
+              {totalPages}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+    }
+
+    return items;
   };
 
   return (
@@ -295,11 +495,14 @@ const Registry = () => {
         </Card>
 
         {/* Results Summary */}
-        <div className="mb-6">
+        <div className="mb-6 flex justify-between items-center">
           <p className="text-gray-600">
-            Showing {filteredData.length} of {mockData.length} registry records
+            Showing {startIndex + 1}-{Math.min(endIndex, filteredData.length)} of {filteredData.length} registry records
             {searchTerm && ` matching "${searchTerm}"`}
             {statusFilter && ` with ${statusFilter} tax status`}
+          </p>
+          <p className="text-sm text-gray-500">
+            Page {currentPage} of {totalPages}
           </p>
         </div>
 
@@ -337,7 +540,7 @@ const Registry = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredData.map((record) => (
+                {currentData.map((record) => (
                   <TableRow key={record.id} className="hover:bg-blue-50/50 transition-colors">
                     <TableCell>
                       <div className="font-mono font-bold text-lg text-gray-900">
@@ -375,6 +578,39 @@ const Registry = () => {
           </CardContent>
         </Card>
 
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-6 flex justify-center">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage > 1) handlePageChange(currentPage - 1);
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+                
+                {renderPaginationItems()}
+                
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
+
         {/* Navigation Links */}
         <div className="mt-8 text-center">
           <div className="flex justify-center gap-4 text-sm text-gray-600">
@@ -389,3 +625,4 @@ const Registry = () => {
 };
 
 export default Registry;
+
