@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Camera, Database, CheckCircle2, Play, Info, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,11 +7,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 import AIAssistant from '@/components/AIAssistant';
 import ConfigurationForm from '@/components/ConfigurationForm';
 
 const Index = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
 
@@ -49,6 +50,11 @@ const Index = () => {
       title: "ALPR System Starting! 🚀",
       description: "Your license plate recognition system is now active.",
     });
+    
+    // Navigate to dashboard after a short delay
+    setTimeout(() => {
+      navigate('/dashboard');
+    }, 1000);
   };
 
   return (
