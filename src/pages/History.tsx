@@ -57,7 +57,8 @@ const History = () => {
   }, [searchTerm, dateFrom, dateTo, currentPage]);
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('en-US', {
+    return new Date(timestamp).toLocaleString('id-ID', {
+      timeZone: 'Asia/Jakarta',
       year: 'numeric',
       month: 'short',
       day: 'numeric',
@@ -233,7 +234,7 @@ const History = () => {
                       </div>
                     </TableCell>
                     <TableCell className="text-gray-600">
-                      {formatTimestamp(record.timestamp)}
+                      {new Date(record.timestamp).toLocaleString()}
                     </TableCell>
                     <TableCell>
                       {getConfidenceBadge(record.confidence)}

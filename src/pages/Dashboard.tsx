@@ -10,6 +10,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { getScanHistory, HistoryRecord } from '@/api/history';
 import { scanOnceImage, getAutoOCRStatus, setAutoOCRStatus } from '@/api/dashboard';
+import { toLocaleDateString } from '@/lib/utils';
 
 const Dashboard = () => {
   const { toast } = useToast();
@@ -45,10 +46,10 @@ const Dashboard = () => {
     const interval = setInterval(async () => {
       try {
         const result = await scanOnceImage();
-        if (result?.plate_number) {
+        if (result?.formatted_plate) {
           const detection: HistoryRecord = {
             id: Date.now(),
-            plate_number: result.plate_number,
+            plate_number: result.formatted_plate,
             timestamp: new Date().toISOString(),
             confidence: result.confidence,
           };
@@ -83,10 +84,10 @@ const Dashboard = () => {
   const handleManualScan = async () => {
     try {
       const result = await scanOnceImage();
-      if (result?.plate_number) {
+      if (result?.formatted_plate) {
         const detection: HistoryRecord = {
           id: Date.now(),
-          plate_number: result.plate_number,
+          plate_number: result.formatted_plate,
           timestamp: new Date().toISOString(),
           confidence: result.confidence,
         };
