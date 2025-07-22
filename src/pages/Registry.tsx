@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Search, RefreshCw, Database, Shield, User, Calendar, Target, Eye } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -155,6 +157,62 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
           </div>
           <p className="text-xl text-gray-600">Data Plat Nomor dan Kepatuhan Pembayaran PKB/SW</p>
         </div>
+
+        {/* Pie Chart Section */}
+        <Card className="mb-8 shadow-lg bg-white/80 animate-scale-in">
+          <CardContent className="p-6">
+            <div className="h-80">
+              <ChartContainer
+                config={{
+                  paid: {
+                    label: "PKB/SW Lunas",
+                    color: "hsl(142, 76%, 36%)",
+                  },
+                  unpaid: {
+                    label: "PKB/SW Belum Lunas", 
+                    color: "hsl(0, 84%, 60%)",
+                  },
+                  unknown: {
+                    label: "PKB/SW Tidak Teridentifikasi",
+                    color: "hsl(215, 20%, 65%)",
+                  },
+                }}
+                className="h-full w-full"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={[
+                        { name: 'PKB/SW Lunas', value: statusCounts.paid, fill: 'hsl(142, 76%, 36%)' },
+                        { name: 'PKB/SW Belum Lunas', value: statusCounts.unpaid, fill: 'hsl(0, 84%, 60%)' },
+                        { name: 'PKB/SW Tidak Teridentifikasi', value: statusCounts.unknown, fill: 'hsl(215, 20%, 65%)' }
+                      ]}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {[
+                        { name: 'PKB/SW Lunas', value: statusCounts.paid, fill: 'hsl(142, 76%, 36%)' },
+                        { name: 'PKB/SW Belum Lunas', value: statusCounts.unpaid, fill: 'hsl(0, 84%, 60%)' },
+                        { name: 'PKB/SW Tidak Teridentifikasi', value: statusCounts.unknown, fill: 'hsl(215, 20%, 65%)' }
+                      ].map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip
+                      content={<ChartTooltipContent />}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-scale-in">
           {(['Lunas','Belum Lunas','Tidak Teridentifikasi'] as const).map(status => {
