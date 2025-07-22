@@ -5,7 +5,7 @@ export interface PlateRecord {
   id: number;
   plate_number: string;
   registered_owner?: string;
-  tax_status: 'Paid' | 'Unpaid' | 'Unknown';
+  tax_status: 'Lunas' | 'Belum Lunas' | 'Tidak Teridentifikasi';
   last_checked: string;
 }
 

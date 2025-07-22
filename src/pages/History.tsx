@@ -76,7 +76,7 @@ const History = () => {
 
   const handleExportCSV = () => {
     const csvContent = [
-      'Plate Number,Timestamp,Confidence',
+      'Nomor Polisi,Timestamp,Confidence',
       ...scanData.map(record =>
         `${record.plate_number},${record.timestamp},${Math.round(record.confidence * 100)}%`
       )
@@ -127,7 +127,7 @@ const History = () => {
           <span>/</span>
           <Link to="/registry" className="hover:text-blue-600 transition-colors">Registry</Link>
           <span>/</span>
-          <span className="text-gray-900 font-medium">History</span>
+          <span className="text-gray-900 font-medium">Riwayat</span>
         </div>
 
         <div className="text-center mb-8 animate-fade-in">
@@ -136,7 +136,7 @@ const History = () => {
               <FileText className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Scan History
+              Riwayat Scan
             </h1>
           </div>
           <p className="text-xl text-gray-600 max-w-2xl mx-auto">
@@ -155,7 +155,7 @@ const History = () => {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">Plate Number</label>
+                <label className="text-sm font-medium text-gray-700">Nomor Polisi</label>
                 <Input
                   placeholder="Search plates..."
                   value={searchTerm}
@@ -212,7 +212,7 @@ const History = () => {
                   <TableHead className="font-semibold">
                     <div className="flex items-center gap-2">
                       <Target className="h-4 w-4 text-blue-500" />
-                      Plate Number
+                      Nomor Polisi
                     </div>
                   </TableHead>
                   <TableHead className="font-semibold">

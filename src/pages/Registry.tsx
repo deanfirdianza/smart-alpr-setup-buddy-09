@@ -12,8 +12,8 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Paid': return 'green';
-      case 'Unpaid': return 'red';
+      case 'Lunas': return 'green';
+      case 'Belum Lunas': return 'red';
       default: return 'gray';
     }
   };
@@ -23,7 +23,7 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
     const { toast } = useToast();
     const navigate = useNavigate();
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState<'Paid' | 'Unpaid' | 'Unknown' | ''>('');
+    const [statusFilter, setStatusFilter] = useState<'Lunas' | 'Belum Lunas' | 'Tidak Teridentifikasi' | ''>('');
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const recordsPerPage = 10;
@@ -48,6 +48,45 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
   const endIndex = startIndex + recordsPerPage;
   const currentData = filteredData.slice(startIndex, endIndex);
 
+
+  const getTaxStatusBadge = (status: 'Lunas' | 'Belum Lunas' | 'Tidak Teridentifikasi') => {
+    const handleStatusClick = () => {
+      setStatusFilter(statusFilter === status ? '' : status);
+    };
+
+    switch (status) {
+      case 'Lunas':
+        return (
+          <Badge 
+            className="bg-green-100 text-green-800 border-green-200 cursor-pointer hover:bg-green-200 transition-colors"
+            onClick={handleStatusClick}
+          >
+            Paid
+          </Badge>
+        );
+      case 'Belum Lunas':
+        return (
+          <Badge 
+            variant="destructive" 
+            className="cursor-pointer hover:bg-red-600 transition-colors"
+            onClick={handleStatusClick}
+          >
+            Unpaid
+          </Badge>
+        );
+      case 'Tidak Teridentifikasi':
+        return (
+          <Badge 
+            variant="secondary" 
+            className="cursor-pointer hover:bg-gray-300 transition-colors"
+            onClick={handleStatusClick}
+          >
+            Unknown
+          </Badge>
+        );
+    }
+  };
+  
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, statusFilter]);
@@ -68,13 +107,13 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
 
   const formatDate = (iso: string) => new Date(iso).toLocaleDateString();
 
-  const handleStatusCardClick = (status: 'Paid' | 'Unpaid' | 'Unknown') =>
+  const handleStatusCardClick = (status: 'Lunas' | 'Belum Lunas' | 'Tidak Teridentifikasi') =>
     setStatusFilter(statusFilter === status ? '' : status);
 
   const statusCounts = {
-    paid: data.filter(r => r.tax_status === 'Paid').length,
-    unpaid: data.filter(r => r.tax_status === 'Unpaid').length,
-    unknown: data.filter(r => r.tax_status === 'Unknown').length,
+    paid: data.filter(r => r.tax_status === 'Lunas').length,
+    unpaid: data.filter(r => r.tax_status === 'Belum Lunas').length,
+    unknown: data.filter(r => r.tax_status === 'Tidak Teridentifikasi').length,
   };
 
   const handleRefreshDatabase = async () => {
@@ -102,7 +141,7 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
         <div className="flex items-center gap-2 mb-6 text-sm text-gray-600">
           <Link to="/" className="hover:text-blue-600">Home</Link><span>/</span>
           <Link to="/dashboard" className="hover:text-blue-600">Dashboard</Link><span>/</span>
-          <span className="text-gray-900 font-medium">Registry</span>
+          <span className="text-gray-900 font-medium">Data Plat Nomor</span>
         </div>
 
         <div className="text-center mb-8 animate-fade-in">
@@ -111,14 +150,14 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
               <Database className="h-8 w-8 text-white" />
             </div>
             <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              License Plate Registry
+              Data Plat Nomor
             </h1>
           </div>
-          <p className="text-xl text-gray-600">Track license plates and their tax payment status</p>
+          <p className="text-xl text-gray-600">Data Plat Nomor dan Kepatuhan Pembayaran PKB/SW</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-scale-in">
-          {(['Paid','Unpaid','Unknown'] as const).map(status => {
+          {(['Lunas','Belum Lunas','Tidak Teridentifikasi'] as const).map(status => {
           const color = getStatusColor(status);
           const count = statusCounts[status.toLowerCase() as keyof typeof statusCounts];
 
@@ -127,7 +166,7 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className={`text-sm font-medium text-${color}-600`}>Tax {status}</p>
+                    <p className={`text-sm font-medium text-${color}-600`}>PKB/SW {status}</p>
                     <p className={`text-2xl font-bold text-${color}-600`}>{count}</p>
                   </div>
                   <div className={`p-3 bg-${color}-100 rounded-full`}>
@@ -144,7 +183,7 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
         <Card className="mb-8 shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Search className="h-5 w-5 text-blue-500" /> Search & Controls
+              <Search className="h-5 w-5 text-blue-500" /> Pencarian
             </CardTitle>
             <CardDescription>Search license plates or refresh data</CardDescription>
           </CardHeader>
@@ -154,7 +193,7 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
               {statusFilter && <Button variant="outline" size="sm" onClick={()=>setStatusFilter('')}>Clear Filter: {statusFilter}</Button>}
               <Button onClick={handleRefreshDatabase} disabled={isRefreshing} className="bg-gradient-to-r from-blue-600 to-purple-600">
                 <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing?'animate-spin':''}`} />
-                Refresh from Gov Database
+                Refresh
               </Button>
             </div>
           </CardContent>
@@ -165,11 +204,11 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead><div className="flex items-center gap-2"><Target className="h-4 w-4"/><span>Plate Number</span></div></TableHead>
-                  <TableHead><div className="flex items-center gap-2"><User className="h-4 w-4"/><span>Owner</span></div></TableHead>
-                  <TableHead><div className="flex items-center gap-2"><Shield className="h-4 w-4"/><span>Tax Status</span></div></TableHead>
-                  <TableHead><div className="flex items-center gap-2"><Calendar className="h-4 w-4"/><span>Last Checked</span></div></TableHead>
-                  <TableHead>Actions</TableHead>
+                  <TableHead><div className="flex items-center gap-2"><Target className="h-4 w-4"/><span>Nomor Polisi</span></div></TableHead>
+                  <TableHead><div className="flex items-center gap-2"><User className="h-4 w-4"/><span>Pemilik</span></div></TableHead>
+                  <TableHead><div className="flex items-center gap-2"><Shield className="h-4 w-4"/><span>Status</span></div></TableHead>
+                  <TableHead><div className="flex items-center gap-2"><Calendar className="h-4 w-4"/><span>Pengecekan Terakhir</span></div></TableHead>
+                  <TableHead>Aksi</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -180,7 +219,7 @@ import { PlateRecord, fetchPlates } from '@/api/registry';
                     <TableCell>{r.tax_status}</TableCell>
                     <TableCell>{formatDate(r.last_checked)}</TableCell>
                     <TableCell><Button variant="outline" size="sm" onClick={()=>handleViewHistory(r.plate_number)}>
-                      <Eye className="h-4 w-4 mr-1"/> Detail History
+                      <Eye className="h-4 w-4 mr-1"/> Detail Riwayat
                     </Button></TableCell>
                   </TableRow>
                 ))}

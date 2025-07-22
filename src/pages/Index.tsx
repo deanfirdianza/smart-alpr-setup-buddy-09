@@ -1,21 +1,39 @@
 import React, { useState } from 'react';
-import { Camera, Database, CheckCircle2, Play, Info, Zap } from 'lucide-react';
+import {
+  Camera, Database, CheckCircle2, Play, Info, Zap
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card, CardContent, CardDescription, CardHeader, CardTitle
+} from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger
+} from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate, Link } from 'react-router-dom';
 import AIAssistant from '@/components/AIAssistant';
 import ConfigurationForm from '@/components/ConfigurationForm';
 
+
 const Index = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+
   const [isConnecting, setIsConnecting] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<'idle' | 'success' | 'error'>('idle');
+
+  // 🔹 LIFTED STATE
+  const [formData, setFormData] = useState({
+    cameraUrl: 'rtsp://192.168.1.100:554/stream',
+    dbHost: 'localhost',
+    dbPort: '3306',
+    dbUser: 'alpr_user',
+    dbPassword: '',
+    dbName: 'alpr_database'
+  });
 
   const handleTestConnection = async () => {
     setIsConnecting(true);
@@ -23,10 +41,8 @@ const Index = () => {
 
     // Simulate connection test
     await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Randomly succeed or fail for demo purposes
     const success = Math.random() > 0.3;
-    
+
     if (success) {
       setConnectionStatus('success');
       toast({
@@ -41,21 +57,24 @@ const Index = () => {
         variant: "destructive",
       });
     }
-    
+
     setIsConnecting(false);
   };
 
   const handleStartScanning = () => {
+    // 🔸 Save config to localStorage
+    localStorage.setItem('alprConfig', JSON.stringify(formData));
+
     toast({
       title: "ALPR System Starting! 🚀",
       description: "Your license plate recognition system is now active.",
     });
-    
-    // Navigate to dashboard after a short delay
+
     setTimeout(() => {
       navigate('/dashboard');
     }, 1000);
   };
+
 
   return (
     <TooltipProvider>
@@ -90,11 +109,11 @@ const Index = () => {
                 <Camera className="h-8 w-8 text-white" />
               </div>
               <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Welcome to Smart ALPR Setup
+                Welcome to PantauPlat
               </h1>
             </div>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-              Let's get your Automatic License Plate Recognition system configured. 
+              Let's get your Plate License Detector system configured.<br/>
               We'll help you connect your camera and database in just a few simple steps.
             </p>
           </div>
@@ -114,6 +133,8 @@ const Index = () => {
               
               <CardContent className="space-y-8">
                 <ConfigurationForm 
+                  formData={formData}
+                  setFormData={setFormData}
                   onTestConnection={handleTestConnection}
                   onStartScanning={handleStartScanning}
                   isConnecting={isConnecting}

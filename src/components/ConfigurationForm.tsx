@@ -6,28 +6,34 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 
+type ConfFormData = {
+  cameraUrl: string;
+  dbHost: string;
+  dbPort: string;
+  dbUser: string;
+  dbPassword: string;
+  dbName: string;
+};
+
 interface ConfigurationFormProps {
+  formData: ConfFormData;
+  setFormData: React.Dispatch<React.SetStateAction<ConfFormData>>;
   onTestConnection: () => void;
   onStartScanning: () => void;
   isConnecting: boolean;
   connectionStatus: 'idle' | 'success' | 'error';
 }
 
+
 const ConfigurationForm: React.FC<ConfigurationFormProps> = ({
+  formData,
+  setFormData,
   onTestConnection,
   onStartScanning,
   isConnecting,
   connectionStatus
 }) => {
   const [showPassword, setShowPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    cameraUrl: 'rtsp://192.168.1.100:554/stream',
-    dbHost: 'localhost',
-    dbPort: '3306',
-    dbUser: 'alpr_user',
-    dbPassword: '',
-    dbName: 'alpr_database'
-  });
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
